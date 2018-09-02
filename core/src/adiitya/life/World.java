@@ -2,7 +2,9 @@ package adiitya.life;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Vector3;
 
 import java.util.Random;
 
@@ -12,31 +14,25 @@ public final class World {
 	private float speed;
 	private int width;
 	private int height;
+	private long generation;
 
 	private float elapsed = 0F;
 
-	public World(int width, int height, boolean randomize, float speed) {
-		grid = createEmptyWorld(width, height, randomize);
+	public World(int width, int height, float speed) {
+		grid = createEmptyWorld(width, height);
 		this.speed = speed;
 		this.width = width;
 		this.height = height;
+		this.generation = 0;
 	}
 
-	private byte[][] createEmptyWorld(int width, int height, boolean randomize) {
+	private byte[][] createEmptyWorld(int width, int height) {
 
 		byte[][] grid = new byte[width][height];
 		Random r = new Random();
 
 		for (int i = 0; i < width * height; i++)
-			grid[i / width][i % width] = randomize ? (byte) r.nextInt(2) : 0;
-
-		if (!randomize) {
-			grid[1][0] = 1;
-			grid[2][0] = 1;
-			grid[0][1] = 1;
-			grid[1][1] = 1;
-			grid[1][2] = 1;
-		}
+			grid[i / width][i % width] = (byte) r.nextInt(2);
 
 		return grid;
 	}
@@ -46,17 +42,23 @@ public final class World {
 	 *
 	 * @param renderer The renderer. Always started and set to filled mode
 	 */
-	public void render(ShapeRenderer renderer) {
+	public void render(ShapeRenderer renderer, OrthographicCamera cam) {
+
+		Vector3 tl = cam.unproject(new Vector3(0, 0, 0));
+		Vector3 br = cam.unproject(new Vector3(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), 0));
+
+		int minX = (int) (16 * Math.ceil(tl.x / 16)) / 16 - 16;
+		int maxX = (int) (16 * Math.ceil(br.x / 16)) / 16 + 16;
+		int minY = (int) (16 * Math.ceil(tl.y / 16)) / 16 - 16;
+		int maxY = (int) (16 * Math.ceil(br.y / 16)) / 16 + 16;
 
 		renderer.setColor(Color.WHITE);
 
-		for (int i = 0; i < width * height; i++) {
-
-			int x = i / width, y = i % height;
-
-			if (grid[x][y] == 1)
-			//renderer.setColor(grid[x][y] == 0 ? Color.RED : Color.WHITE);
-				renderer.box(x * 16, y * 16, 0, 16, 16, 0);
+		for (int y = minY; y < maxY; y++) {
+			for (int x = minX; x < maxX; x++) {
+				if (get(x, y) == 1)
+					renderer.box(x * 16, y * 16, 0, 16, 16, 0);
+			}
 		}
 	}
 
@@ -82,41 +84,42 @@ public final class World {
 					newGrid[x][y] = (byte) (neighbours > 1 && neighbours < 4 ? 1 : 0);
 				else
 					newGrid[x][y] = (byte) (neighbours == 3 ? 1 : 0);
-
-				//System.out.printf("%x > %x\n", cell, newGrid[x][y]);
 			}
 
 			grid = newGrid;
 		}
+
+		generation++;
+	}
+
+	public long getGeneration() {
+		return generation;
+	}
+
+	private byte get(int x, int y) {
+
+		x %= width;
+		y %= height;
+
+		x = x < 0 ? Math.abs(width + x) : x;
+		y = y < 0 ? Math.abs(height + y) : y;
+
+		return grid[x][y];
 	}
 
 	private byte getNeighbours(int x, int y) {
 
 		byte neighbours = 0;
 
-		//System.out.printf("[%d, %d]\n", x, y);
-		neighbours += getNeighbour(x, y, 0, -1); //top
-		neighbours += getNeighbour(x, y, 1, -1); //tr
-		neighbours += getNeighbour(x, y, 1, 0); //r
-		neighbours += getNeighbour(x, y, 1, 1); //br
-		neighbours += getNeighbour(x, y, 0, 1); //b
-		neighbours += getNeighbour(x, y, -1, 1); //bl
-		neighbours += getNeighbour(x, y, -1, 0); //l
-		neighbours += getNeighbour(x, y, -1, -1); //tl
+		neighbours += get(x, y-1); //top
+		neighbours += get(x+1, y-1); //tr
+		neighbours += get(x+1, y); //r
+		neighbours += get(x+1, y+1); //br
+		neighbours += get(x, y+1); //b
+		neighbours += get(x-1, y+1); //bl
+		neighbours += get(x-1, y); //l
+		neighbours += get(x-1, y-1); //tl
 
 		return neighbours;
-	}
-
-	private byte getNeighbour(int x, int y, int xDir, int yDir) {
-
-		int cellX = (x + xDir) % width;
-		int cellY = (y + yDir) % height;
-
-		cellX = cellX < 0 ? Math.abs(width + cellX) : cellX;
-		cellY = cellY < 0 ? Math.abs(height + cellY) : cellY;
-
-		//System.out.printf("(%d, %d) = %x\n", cellX, cellY, grid[cellX][cellY]);
-
-		return grid[cellX][cellY];
 	}
 }
