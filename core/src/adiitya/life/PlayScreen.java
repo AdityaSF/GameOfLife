@@ -1,5 +1,6 @@
 package adiitya.life;
 
+import adiitya.life.input.GameInput;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -13,6 +14,8 @@ public class PlayScreen implements Screen {
 	private ShapeRenderer renderer;
 	private World world;
 
+	private GameInput input;
+
 	public PlayScreen(Main game) {
 		this.game = game;
 	}
@@ -21,8 +24,11 @@ public class PlayScreen implements Screen {
 	public void show() {
 
 		renderer = new ShapeRenderer();
-		world = new World(256, 256, 0.01F);
+		world = new World(256, 256, 0.1F);
 		elapsed = 0F;
+
+		input = new GameInput(game, world);
+		Gdx.input.setInputProcessor(input);
 	}
 
 	@Override
@@ -30,8 +36,10 @@ public class PlayScreen implements Screen {
 
 		elapsed += Gdx.graphics.getDeltaTime();
 
+		input.poll();
 		updateRenderer();
 		world.update();
+
 		renderer.begin(ShapeType.Filled);
 		world.render(renderer, game.getCamera());
 		renderer.end();

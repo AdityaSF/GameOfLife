@@ -66,7 +66,7 @@ public final class World {
 
 		elapsed += Gdx.graphics.getDeltaTime();
 
-		if (elapsed >= speed) {
+		while (elapsed >= speed) {
 			elapsed -= speed;
 
 			byte[][] newGrid = new byte[width][height];
@@ -87,9 +87,8 @@ public final class World {
 			}
 
 			grid = newGrid;
+			generation++;
 		}
-
-		generation++;
 	}
 
 	public long getGeneration() {
@@ -121,5 +120,9 @@ public final class World {
 		neighbours += get(x-1, y-1); //tl
 
 		return neighbours;
+	}
+
+	public void reset() {
+		grid = createEmptyWorld(width, height);
 	}
 }
