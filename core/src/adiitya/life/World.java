@@ -15,7 +15,6 @@ public final class World {
 	private int width;
 	private int height;
 	private long generation;
-	private float scale = 16F;
 
 	private float elapsed = 0F;
 
@@ -48,17 +47,17 @@ public final class World {
 		Vector3 tl = cam.unproject(new Vector3(0, 0, 0));
 		Vector3 br = cam.unproject(new Vector3(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), 0));
 
-		int minX = (int) ((int) (16 * Math.ceil(tl.x / 16)) / 16 - 16);
-		int maxX = (int) ((int) (16 * Math.ceil(br.x / 16)) / 16 + 16);
-		int minY = (int) ((int) (16 * Math.ceil(tl.y / 16)) / 16 - 16);
-		int maxY = (int) ((int) (16 * Math.ceil(br.y / 16)) / 16 + 16);
+		int minX = (int) (16 * Math.ceil(tl.x / 16)) / 16 - 16;
+		int maxX = (int) (16 * Math.ceil(br.x / 16)) / 16 + 16;
+		int minY = (int) (16 * Math.ceil(tl.y / 16)) / 16 - 16;
+		int maxY = (int) (16 * Math.ceil(br.y / 16)) / 16 + 16;
 
 		renderer.setColor(Color.WHITE);
 
 		for (int y = minY; y < maxY; y++) {
 			for (int x = minX; x < maxX; x++) {
 				if (get(x, y) == 1)
-					renderer.box(x * 16, y * 16, scale, 16, 16, 0);
+					renderer.box(x * 16, y * 16, 0, 16, 16, 0);
 			}
 		}
 	}
@@ -121,14 +120,6 @@ public final class World {
 		neighbours += get(x-1, y-1); //tl
 
 		return neighbours;
-	}
-
-	public void zoomOut() {
-		scale -= 2.5 * Gdx.graphics.getDeltaTime();
-	}
-
-	public void zoomIn() {
-		scale += 2.5 * Gdx.graphics.getDeltaTime();
 	}
 
 	public void reset() {

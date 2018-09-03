@@ -75,10 +75,12 @@ public class PlayScreen implements Screen {
 		renderer.end();
 
 		Vector3 tl = textCam.unproject(new Vector3(0, 0, 0));
+		int x = (int) game.getCamera().position.x / 16;
+		int y = (int) game.getCamera().position.y / 16;
 
 		fontBatch.begin();
 		font.draw(fontBatch, String.format("FPS: %d", Gdx.graphics.getFramesPerSecond()), tl.x + 10, tl.y + 10);
-		font.draw(fontBatch, String.format("Pos: (%d, %d)", (int) game.getCamera().position.x / 16, (int) -(game.getCamera().position.y / 16)), tl.x + 10, tl.y + 36);
+		font.draw(fontBatch, String.format("Pos: (%d, %d)", x, -y), tl.x + 10, tl.y + 36);
 		fontBatch.end();
 	}
 
@@ -93,21 +95,6 @@ public class PlayScreen implements Screen {
 	}
 
 	@Override
-	public void pause() {
-
-	}
-
-	@Override
-	public void resume() {
-
-	}
-
-	@Override
-	public void hide() {
-
-	}
-
-	@Override
 	public void dispose() {
 		renderer.dispose();
 		fontBatch.dispose();
@@ -118,4 +105,8 @@ public class PlayScreen implements Screen {
 		renderer.setProjectionMatrix(game.getCamera().combined);
 		fontBatch.setProjectionMatrix(textCam.combined);
 	}
+
+	@Override public void pause() {}
+	@Override public void resume() {}
+	@Override public void hide() {}
 }
